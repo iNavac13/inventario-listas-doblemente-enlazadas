@@ -41,15 +41,23 @@ class Inventario{
     }
 
     eliminar(codigo){
-            for (let i = 0; i <= this.listaProductos.length-1; i++) {
-                if (this.listaProductos[i].codigo == codigo){
-                        for (let x = i; x <= this.listaProductos.length-1; x++) {
-                            this.listaProductos[i] = this.listaProductos[i+1];
-                        }
+        let aux=this.primero
+        if(aux.codigo==codigo){
+            this.primero = aux.siguiente
+            return true;
+        }else{
+            let siguiente = null;
+            while(aux.siguiente!=null){
+                siguiente= aux.siguiente;
+                if(siguiente.codigo==codigo){
+                    aux.siguiente=aux.siguiente.siguiente
+                    return true;
+                }else{
+                    aux=aux.siguiente;
                 }
             }
-            this.listaProductos.pop();
-            return true;  
+            return false;
+        }
     };    
 
     buscar(codigo){
@@ -124,11 +132,11 @@ btnAgregar.addEventListener('click', () => {
 const btnEliminar = document.getElementById('btnEliminar')
 btnEliminar.addEventListener('click', () => {
     const codigo = document.getElementById('txtCodigo').value
-    if (miInv.buscar(codigo) == false) {
+    if (miInv.buscar(codigo) == null) {
         document.getElementById("listado").innerHTML=`El producto con codigo: ${codigo} NO pudo ser eliminado porque no existe`
     } else{
         miInv.eliminar(codigo)
-        document.getElementById("listado").innerHTML=`El prodcuto con codigo: ${codigo} fue eliminado`
+        document.getElementById("listado").innerHTML=`El producto con codigo: ${codigo} fue eliminado`
 
     }
 
