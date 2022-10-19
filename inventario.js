@@ -40,6 +40,35 @@ class Inventario{
         }
     }
 
+    insertar(posicion,producto){
+        if(this.buscar(producto.codigo) == null && Number(producto.codigo) > 0){
+
+        let aux = this.primero
+        let contador = 1;
+        if(posicion==1){
+            this.primero = producto;
+            producto.siguiente=aux;
+            return true
+        }
+        while(contador!=posicion-1){
+            if(aux.siguiente==null){
+                break;
+            }
+            aux = aux.siguiente;
+            contador++;
+        }
+        if(aux!=null&&contador==posicion-1){
+            producto.siguiente=aux.siguiente;
+            aux.siguiente=producto;
+            return true
+        }else if(aux.siguiente==null&&contador==posicion-1){
+            aux.siguiente=producto;
+            return true
+        }
+        return false
+    }
+    }
+
     eliminar(codigo){
         let aux=this.primero
         if(aux.codigo==codigo){
@@ -141,6 +170,30 @@ btnEliminar.addEventListener('click', () => {
     }
 
 })
+
+const btnInsertar = document.getElementById("btnInsertar")
+btnInsertar.addEventListener("click", () =>{
+    const codigo = document.getElementById("txtCodigo").value;
+    const nombre = document.getElementById("txtNombre").value;
+    const cantidad = document.getElementById("txtCantidad").value;
+    const costo = document.getElementById("txtCosto").value;
+    const producto = new Producto(parseInt(codigo), nombre, cantidad, costo);
+    const posicion = parseInt(document.getElementById("txtPosicion").value);
+    if(producto.codigo>0 && posicion>0){
+        const res = miInv.insertar(posicion,producto)
+        if(res==true){
+            document.getElementById("listado").innerHTML =`El producto con código ${codigo} fue insertado en la posicion ${posicion}`;    
+        }
+        else if(res==false){
+            document.getElementById("listado").innerHTML =`La posición es mayor a la cantidad de productos`;
+        }
+        else{
+            document.getElementById("listado").innerHTML =`El producto con código ${codigo} ya existe`;
+        }
+    } else
+        document.getElementById("listado").innerHTML =`NO se ingresó codigo o posicion`;
+})
+
 
 const btnBuscar = document.getElementById('btnBuscar')
 btnBuscar.addEventListener('click', () => {
