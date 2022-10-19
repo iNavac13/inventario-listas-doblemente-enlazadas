@@ -5,6 +5,7 @@ class Producto{
         this.nombre = nombre;
         this.cantidad = cantidad;
         this.costo = costo;
+        this.siguiente=null;
     };
 
     info(){
@@ -16,29 +17,30 @@ class Inventario{
         
     constructor(){
         this.listaProductos = new Array();
+        this.primero=null;
     };
 
-    agregarProducto(producto, codigo){
-        let i = this.listaProductos.length
-        if (i==0){
-            this.listaProductos[i]=producto
-            return true
-        }
-        let buscar = this.buscar(codigo)
-        if(buscar == false ){
-            while (this.listaProductos[i-1]!=null&&producto.codigo < this.listaProductos[i-1].codigo){
-                this.listaProductos[i]= this.listaProductos[i-1];
-                i--;
+    agregar(producto){
+        if(this.buscar(producto.codigo)==null){
+            if(this.primero==null){
+                this.primero=producto
+            }else{
+                this.agregarSiguiente(producto,this.primero);
             }
-            this.listaProductos[i]=producto;
-            return true
+            return true;
+        }
+        return false;
+    }
+
+    agregarSiguiente(producto,nodo){
+        if(nodo.siguiente==null){
+            nodo.siguiente =producto
         }else{
-            return false;
+            this.agregarSiguiente(producto,nodo.siguiente)
         }
     }
 
     eliminar(codigo){
-    
             for (let i = 0; i <= this.listaProductos.length-1; i++) {
                 if (this.listaProductos[i].codigo == codigo){
                         for (let x = i; x <= this.listaProductos.length-1; x++) {
@@ -48,57 +50,50 @@ class Inventario{
             }
             this.listaProductos.pop();
             return true;  
-    };
+    };    
 
     buscar(codigo){
-        let producto = false;
-        let inicio = 0;
-        let fin = this.listaProductos.length - 1;
-        let mitad = Math.floor((inicio + fin) / 2);
-        while (inicio <= fin) {
-            if (Number(this.listaProductos[mitad].codigo) === Number(codigo)) {
-                producto = this.listaProductos[mitad];
-                break;
-            } else if (Number(this.listaProductos[mitad].codigo) < Number(codigo)) {
-                inicio = mitad + 1;
-            } else {
-                fin = mitad - 1;
+        let aux=this.primero
+        while(aux!=null){
+            if(aux.codigo==codigo){
+                return aux
+            }else{
+                aux=aux.siguiente;
             }
-            mitad = Math.floor((inicio + fin) / 2);
         }
-        return producto;
+        return null;
     }
-    
-
-    //buscar(codigo){
-      //  let value = 0;
-        //for (let i = 0; i < this.listaProductos.length; i++) {
-          //  if (this.listaProductos[i].codigo == codigo) {
-            //    value = 1;
-              //  return this.listaProductos[i];
-           // } else {
-            //    return value;
-           // }
-     //   }
-  //  };
 
     listar(){
-        let lista = '';
-        let contador = 0;
-        this.listaProductos.forEach(producto => {
-            lista += this.listaProductos[contador].info()+"<br>";
-            contador++
-        });
+        let lista = "";
+        if(this.primero==null){
+            return lista="El inventario NO tiene productos";
+        }
+        lista = "<br>"+this.recorrerLista(this.primero);
         return `                LISTA
         <br>${lista}`;
     };
     
+    recorrerLista(nodo){
+        if(nodo.siguiente==null){
+          return nodo.info()+"<br>";
+        } else {
+        return nodo.info()+"<br>"+`${this.recorrerLista(nodo.siguiente)}`
+        }
+    }
+
+    recorrerListaInverso(nodo){
+        if(nodo.siguiente==null){
+          return nodo.info()+"<br>";
+        }
+        return `${this.recorrerListaInverso(nodo.siguiente)}`+nodo.info()+"<br>";
+    }
+
 
     listarInverso(){
-        let lista = '';
-        for(let i=this.listaProductos.length-1;i>=0;i--){
-            lista += this.listaProductos[i].info()+"<br>";
-        }
+        let lista = "";
+        if(this.primero==null){return lista="El inventario NO tiene productos"}
+        lista = "<br>"+this.recorrerListaInverso(this.primero);
         return `                LISTA INVERSA
         <br>${lista}`;
     };
@@ -112,16 +107,16 @@ btnAgregar.addEventListener('click', () => {
     const nombre = document.getElementById('txtNombre').value
     const cantidad = document.getElementById('txtCantidad').value
     const costo = document.getElementById('txtCosto').value
+    const producto = new Producto(parseInt(codigo), nombre, cantidad, costo);
     if (codigo=="") {
-        document.getElementById("listado").innerHTML=`NO se puede agregar el producto porque no tiene código`
+        document.getElementById("listado").innerHTML = `No se agregó el producto porque NO tiene código<br>`
     }else{
-        const producto = new Producto(parseInt(codigo), nombre, cantidad, costo);
-        res = miInv.agregarProducto(producto, codigo)
+        res = miInv.agregar(producto)
         if(res==true){
-            document.getElementById("listado").innerHTML=`El producto fue agregado`
+            document.getElementById("listado").innerHTML = `El producto ${nombre} con código ${codigo} fue agregado<br>`
         }
         else if(res==false){
-            document.getElementById("listado").innerHTML=`NO se agregó el producto porque el código ya está en uso`;
+            document.getElementById("listado").innerHTML =`NO se agregó el producto porque el código ${codigo} ya está en uso<br>`;
         }
     }
 });
@@ -143,7 +138,7 @@ const btnBuscar = document.getElementById('btnBuscar')
 btnBuscar.addEventListener('click', () => {
     const codigo = document.getElementById('txtCodigo').value
     let producto = miInv.buscar(codigo);
-    if(miInv.buscar(codigo) == false){
+    if(miInv.buscar(codigo) == null){
         document.getElementById("listado").innerHTML=`<p>El producto con código ${codigo} NO fue encontrado</p>`
     } else {
         document.getElementById("listado").innerHTML=`<p>El producto con código ${codigo} fue encontrado</p><br>
@@ -154,10 +149,10 @@ btnBuscar.addEventListener('click', () => {
 
 const btnListar = document.getElementById('btnListar')
 btnListar.addEventListener('click', () => {
-    document.getElementById("listado").innerHTML=`<p>${miInv.listar()}</p>`
+    document.getElementById("listado").innerHTML=`<p>${miInv.listar()}<br></p>`
 });
 
 const btnListarInverso = document.getElementById('btnListarInverso')
 btnListarInverso.addEventListener('click', () => {
-    document.getElementById("listado").innerHTML=`<p>${miInv.listarInverso()}</p>`
+    document.getElementById("listado").innerHTML=`<p>${miInv.listarInverso()}<br></p>`
 });
